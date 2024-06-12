@@ -1,0 +1,39 @@
+enable_learning_state:
+  description: Enable or disable the learning state of the device.
+  fields:
+    state:
+      description: True to enable, False to disable.
+      example: true
+
+get_learned_code:
+  description: Get the learned IR code from the device.
+  fields:
+    learning_time:
+      description: The time when the learning process started.
+      example: 1640000837000
+
+save_learned_code:
+  description: Save the learned IR code and generate a DIY remote control.
+  fields:
+    category_id:
+      description: The ID of a specified category.
+      example: 1
+    remote_name:
+      description: The name of a specified remote control.
+      example: test
+    code:
+      description: The learned IR code.
+      example: "c42230112602f401260226022602260226022602260226022602260226027206260226022602720626027206260272062602720626027206260272065802f401260272062602260226027206260226022602260226024006260226022602260226022602260272062602260226027206260272062602260258024006260272062602720626024c9af6226608260220bf"
+    key:
+      description: The key of a specified infrared code.
+      example: test
+
+send_learned_code:
+  description: Send the learned IR code to a specified remote control.
+  fields:
+    remote_id:
+      description: The ID of a specified remote control.
+      example: "d5s65ca55"
+    code:
+      description: The learned IR code.
+      example: "c42230112602f401260226022602260226022602260226022602260226027206260226022602720626027206260272062602720626027206260272065802f401260272062602260226027206260226022602260226024006260226022602260226022602260272062602260226027206260272062602260258024006260272062602720626024c9af62266082602****"

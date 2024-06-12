@@ -14,13 +14,17 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
         tuya_api = TuyaAPI(hass, access_id, access_secret, ir_remote_device_id)
 
-        async def handle_enable_learning_state(service_call):
-            state = service_call.data.get('state')
-            await tuya_api.enable_learning_state(state)
+        async def handle_enable_learning_state(call):
+            _LOGGER.debug("Handling enable_learning_state service call")
+            state = call.data.get("state")
+            _LOGGER.debug(f"State parameter: {state}")
 
+            await tuya_api.enable_learning_status(state)
+        
         async def handle_get_learned_code(service_call):
             learning_time = service_call.data.get('learning_time')
-            learned_code = await tuya_api.get_learned_code(learning_time)
+            _LOGGER.debug(f"Fetching learned IR code at learning time: {learning_time}")
+            learned_code = await tuya_api.get_learned_ir_code(learning_time)
             _LOGGER.info(f"Learned code: {learned_code}")
 
         async def handle_save_learned_code(service_call):
@@ -28,12 +32,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             remote_name = service_call.data.get('remote_name')
             code = service_call.data.get('code')
             key = service_call.data.get('key')
-            await tuya_api.save_learned_code(category_id, remote_name, code, key)
+            _LOGGER.debug(f"Saving learned code: category_id={category_id}, remote_name={remote_name}, code={code}, key={key}")
+            await tuya_api.save_learned_ir_code(category_id, remote_name, code, key)
 
         async def handle_send_learned_code(service_call):
             remote_id = service_call.data.get('remote_id')
             code = service_call.data.get('code')
-            await tuya_api.send_learned_code(remote_id, code)
+            key = service_call.data.get('key')  # Define the 'key' variable here
+            _LOGGER.debug(f"Sending learned code to remote_id={remote_id}: {code}")
+            await tuya_api.save_learned_ir_code(remote_id, code, key)
 
         hass.services.async_register("tuya_ir", "enable_learning_state", handle_enable_learning_state)
         hass.services.async_register("tuya_ir", "get_learned_code", handle_get_learned_code)

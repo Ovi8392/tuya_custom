@@ -38,9 +38,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         async def handle_send_learned_code(service_call):
             remote_id = service_call.data.get('remote_id')
             code = service_call.data.get('code')
-            key = service_call.data.get('key')  # Define the 'key' variable here
+            key = service_call.data.get('key')
+            learned_code = service_call.data.get('learned_code')  # Adding 'learned_code' parameter
             _LOGGER.debug(f"Sending learned code to remote_id={remote_id}: {code}")
-            await tuya_api.save_learned_ir_code(remote_id, code, key)
+            await tuya_api.save_learned_ir_code(remote_id, code, key, learned_code)
 
         hass.services.async_register("tuya_ir", "enable_learning_state", handle_enable_learning_state)
         hass.services.async_register("tuya_ir", "get_learned_code", handle_get_learned_code)

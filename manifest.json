@@ -3,6 +3,6 @@
   "name": "Tuya IR",
   "documentation": "https://github.com/Ovi8392/tuya_ir",
   "dependencies": [],
-  "codeowners": ["@yOvi8392"],
+  "codeowners": ["@Ovi8392"],
   "requirements": ["tuya-connector==0.1.0"]
 }

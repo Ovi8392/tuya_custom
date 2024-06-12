@@ -1,74 +1,83 @@
-import logging
 from tuya_connector import TuyaOpenAPI
 from homeassistant.core import HomeAssistant
+import logging
+from pprint import pformat
 
 _LOGGER = logging.getLogger(__name__)
 
 class TuyaAPI:
-    def __init__(self, hass: HomeAssistant, access_id, access_secret, ir_remote_device_id):
+    """
+    Interface to interact with Tuya devices.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        access_id,
+        access_secret,
+        ir_remote_device_id,
+    ):
+        """
+        Initialize Tuya API.
+        """
         self.access_id = access_id
         self.access_secret = access_secret
         self.ir_remote_device_id = ir_remote_device_id
         self.hass = hass
+        self.openapi = None
 
-        openapi = TuyaOpenAPI("https://openapi.tuyaus.com", access_id, access_secret)
-        openapi.connect()
-        self.openapi = openapi
+    async def enable_learning_status(self, state=True):
+        """
+        Enable the learning status.
+        """
+        url = f"/v2.0/infrareds/{self.ir_remote_device_id}/learning-state?state={state}"
+        _LOGGER.info(f"Enabling learning status: {state}")
+        return await self._api_request(url, method="PUT")
 
-    async def enable_learning_state(self, state):
-        url = f"/v2.0/infrareds/{self.ir_remote_device_id}/learning-state"
-        try:
-            data = await self.hass.async_add_executor_job(self.openapi.put, url, {"state": state})
-            if data.get("success"):
-                _LOGGER.info(f"Learning state changed: {state}")
-                return data.get("result")
-            else:
-                _LOGGER.warning(f"Failed to change learning state: {data}")
-        except Exception as e:
-            _LOGGER.error(f"Error changing learning state: {e}")
-        return None
-
-    async def get_learned_code(self, learning_time):
+    async def get_learned_ir_code(self, learning_time):
+        """
+        Get the learned IR code.
+        """
         url = f"/v2.0/infrareds/{self.ir_remote_device_id}/learning-codes?learning_time={learning_time}"
-        try:
-            data = await self.hass.async_add_executor_job(self.openapi.get, url)
-            if data.get("success"):
-                _LOGGER.info(f"Learned code retrieved")
-                return data.get("result")
-            else:
-                _LOGGER.warning(f"Failed to retrieve learned code: {data}")
-        except Exception as e:
-            _LOGGER.error(f"Error retrieving learned code: {e}")
-        return None
+        _LOGGER.info(f"Fetching learned IR code at time: {learning_time}")
+        return await self._api_request(url)
 
-    async def save_learned_code(self, category_id, remote_name, code, key):
+    async def save_learned_ir_code(self, category_id, remote_name, key_name, learned_code):
+        """
+        Save the learned IR code.
+        """
         url = f"/v2.0/infrareds/{self.ir_remote_device_id}/learning-codes"
-        payload = {
+        data = {
             "category_id": category_id,
             "remote_name": remote_name,
-            "codes": [{"code": code, "key": key}]
+            "codes": [
+                {
+                    "code": learned_code,
+                    "key_name": key_name
+                }
+            ]
         }
-        try:
-            data = await self.hass.async_add_executor_job(self.openapi.post, url, payload)
-            if data.get("success"):
-                _LOGGER.info(f"Learned code saved successfully")
-                return data.get("result")
-            else:
-                _LOGGER.warning(f"Failed to save learned code: {data}")
-        except Exception as e:
-            _LOGGER.error(f"Error saving learned code: {e}")
-        return None
+        _LOGGER.info("Saving learned IR code")
+        return await self._api_request(url, method="POST", data=data)
 
-    async def send_learned_code(self, remote_id, code):
-        url = f"/v2.0/infrareds/{self.ir_remote_device_id}/remotes/{remote_id}/learning-codes"
-        payload = {"code": code}
+    async def _api_request(self, url, method="GET", data=None):
+        """
+        Make API request.
+        """
+        if self.openapi is None:
+            self.openapi = TuyaOpenAPI("https://openapi.tuyaus.com", self.access_id, self.access_secret)
+            await self.hass.async_add_executor_job(self.openapi.connect)
         try:
-            data = await self.hass.async_add_executor_job(self.openapi.post, url, payload)
-            if data.get("success"):
-                _LOGGER.info(f"Learned code sent successfully")
-                return data.get("result")
+            if method == "GET":
+                response = await self.hass.async_add_executor_job(self.openapi.get, url)
+            elif method == "POST":
+                response = await self.hass.async_add_executor_job(self.openapi.post, url, data)
+            elif method == "PUT":
+                response = await self.hass.async_add_executor_job(self.openapi.put, url)
             else:
-                _LOGGER.warning(f"Failed to send learned code: {data}")
+                raise ValueError("Unsupported HTTP method")
+            _LOGGER.debug(f"API response: {pformat(response)}")
+            return response
         except Exception as e:
-            _LOGGER.error(f"Error sending learned code: {e}")
-        return None
+            _LOGGER.error(f"Error making API request: {e}")
+            return None

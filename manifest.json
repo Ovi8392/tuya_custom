@@ -1,10 +1,9 @@
 {
-  "domain": "tuya_ir",
-  "name": "Tuya IR",
+  "domain": "tuya_custom",
+  "name": "Tuya Custom",
   "documentation": "https://github.com/Ovi8392/tuya_ir",
-  "codeowners": [],
   "integration_type": "entity",
   "iot_class": "cloud_polling",
   "requirements": ["tuya-connector-python==0.1.2"],
-  "version": "1.0"
+  "version": "0.1"
 }

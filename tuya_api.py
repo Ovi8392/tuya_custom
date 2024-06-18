@@ -39,7 +39,13 @@ class TuyaAPI:
         _LOGGER.info("Saving learned IR code")
         return await self._api_request(url, method="POST", data=data)
 
+    #async def get_remote_keys(self):
+    #    url = f"/v2.0/infrareds/{self.ir_remote_device_id}/remotes/{self.remote_id}/keys"
+    #    _LOGGER.info(f"Fetching keys for remote control: {self.remote_id}")
+    #    return await self._api_request(url)
+        
     async def get_remote_keys(self):
+    #    url = f"/v2.0/infrareds/8/base-key?lang=en"
         url = f"/v2.0/infrareds/{self.ir_remote_device_id}/remotes/{self.remote_id}/keys"
         _LOGGER.info(f"Fetching keys for remote control: {self.remote_id}")
         return await self._api_request(url)
